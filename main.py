@@ -22,15 +22,16 @@ def main():
     print('Device: {}.'.format(device))
 
     train_loader, valid_loader = mnist_loader(args.root, args.batch_size)
-    model = Net()
-    if args.parallel:
-        model = nn.DataParallel(model)
-    model = model.to(device)
 
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    net = Net()
+    if args.parallel:
+        net = nn.DataParallel(net)
+    net = net.to(device)
+
+    optimizer = optim.Adam(net.parameters(), lr=args.lr)
 
     def train():
-        model.train()
+        net.train()
 
         train_loss = AverageMeter()
         train_acc = AccuracyMeter()
@@ -38,7 +39,7 @@ def main():
             x = x.to(device)
             y = y.to(device)
 
-            output = model(x)
+            output = net(x)
             loss = F.cross_entropy(output, y)
 
             optimizer.zero_grad()
@@ -54,7 +55,7 @@ def main():
         return train_loss.average, train_acc.accuracy
 
     def validate():
-        model.eval()
+        net.eval()
 
         valid_loss = AverageMeter()
         valid_acc = AccuracyMeter()
@@ -63,7 +64,7 @@ def main():
                 x = x.to(device)
                 y = y.to(device)
 
-                output = model(x)
+                output = net(x)
                 loss = F.cross_entropy(output, y)
 
                 pred = output.data.max(dim=1)[1]
