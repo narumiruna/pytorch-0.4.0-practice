@@ -15,13 +15,17 @@ def main():
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--epochs', type=int, default=20)
+    parser.add_argument('--parallel', action='store_true')
     args = parser.parse_args()
     print(args)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Device: {}.'.format(device))
 
     train_loader, valid_loader = mnist_loader(args.root, args.batch_size)
-    model = Net().to(device)
+    model = Net()
+    if args.parallel:
+        model = nn.DataParallel(model)
+    model = model.to(device)
 
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
